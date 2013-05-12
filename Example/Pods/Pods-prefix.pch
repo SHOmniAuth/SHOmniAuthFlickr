@@ -3,7 +3,6 @@
 #endif
 
 #import "Pods-environment.h"
-
 #ifdef __OBJC__
 #import <Availability.h>
 #if __IPHONE_OS_VERSION_MIN_REQUIRED

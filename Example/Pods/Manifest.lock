@@ -1,6 +1,4 @@
 PODS:
-  - AFLinkedInOAuth1Client (0.0.3):
-    - AFOAuth1Client (~> 0.2.0)
   - AFNetworking (1.2.1)
   - AFOAuth1Client (0.2.0):
     - AFNetworking (>= 1.0)
@@ -17,7 +15,7 @@ PODS:
   - SHOmniAuth (0.1.1):
     - LUKeychainAccess
   - SHOmniAuthFlickr (0.1.0):
-    - AFLinkedInOAuth1Client (~> 0.0.3)
+    - AFOAuth1Client (~> 0.2.0)
     - SHAccountStore (~> 0.1.0)
     - SHOmniAuth (~> 0.1.0)
     - SHRequest (~> 0.1.0)
@@ -33,7 +31,6 @@ EXTERNAL SOURCES:
     :path: ../
 
 SPEC CHECKSUMS:
-  AFLinkedInOAuth1Client: a4e9d7af2a93668be256a01d86505693a79f601e
   AFNetworking: 616da0028916ce296f5c3cef74e5552eb4e10e13
   AFOAuth1Client: 3e01e6e4218116c2e279671c8ab086133514a350
   BlocksKit: 7396526b0816734103f6133fbb1a520c8b04e80c
@@ -43,7 +40,7 @@ SPEC CHECKSUMS:
   OAuthCore: 4164eec5e28c68f794953446e68f91054ffe570c
   SHAccountStore: 72b58b8d0055a810a196618cf7e2be269d71d1c7
   SHOmniAuth: afd6278ea528acc0569bdee94c2185b03457b357
-  SHOmniAuthFlickr: d38272cb1ab6117724035f1552a57f4c027609ab
+  SHOmniAuthFlickr: 9eaeb9c5db4752f001559b0b22265f754eaf8278
   SHRequest: 47b9393c6dbf294a08621581c2ec5cf7ee2bd6df
 
 COCOAPODS: 0.19.1
