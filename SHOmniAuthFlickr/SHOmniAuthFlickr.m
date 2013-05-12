@@ -1,13 +1,13 @@
 //
-//  SHOmniAuthLinkedIn.m
+//  SHOmniAuthFlickr.m
 //  SHAccountManagerExample
 //
-//  Created by Seivan Heidari on 3/23/13.
+//  Created by Seivan Heidari on 5/12/13.
 //  Copyright (c) 2013 Seivan Heidari. All rights reserved.
 //
 
 //Class dependency
-#import "SHOmniAuthLinkedIn.h"
+#import "SHOmniAuthFlickr.h"
 #import "SHOmniAuth.h"
 #import "SHOmniAuthProviderPrivates.h"
 #import "OAuthCore.h"
@@ -16,7 +16,6 @@
 #import "SHAccountStore.h"
 #import "SHRequest.h"
 
-//Login dependency
 #import "AFLinkedInOAuth1Client.h"
 
 #define NSNullIfNil(v) (v ? v : [NSNull null])
@@ -24,16 +23,16 @@
 
 @interface SHAccount ()
 @property (readwrite, NS_NONATOMIC_IOSONLY) NSString      *identifier;
+@end
+
+@interface SHOmniAuthFlickr ()
 +(void)updateAccount:(SHAccount *)theAccount withCompleteBlock:(SHOmniAuthAccountResponseHandler)completeBlock;
 +(void)performLoginForNewAccount:(SHOmniAuthAccountResponseHandler)completionBlock;
 +(NSMutableDictionary *)authHashWithResponse:(NSDictionary *)theResponse;
-@end
-
-@interface SHOmniAuthLinkedIn ()
 
 @end
 
-@implementation SHOmniAuthLinkedIn
+@implementation SHOmniAuthFlickr
 
 
 +(void)performLoginWithListOfAccounts:(SHOmniAuthAccountsListHandler)accountPickerBlock
@@ -44,7 +43,7 @@
   accountPickerBlock([store accountsWithAccountType:type], ^(id<account> theChosenAccount) {
     
     if(theChosenAccount == nil) [self performLoginForNewAccount:completionBlock];
-    else [SHOmniAuthLinkedIn updateAccount:(SHAccount *)theChosenAccount withCompleteBlock:completionBlock];
+    else [SHOmniAuthFlickr updateAccount:(SHAccount *)theChosenAccount withCompleteBlock:completionBlock];
     
   });
   
@@ -80,30 +79,34 @@
   SHAccountStore * store    = [[SHAccountStore alloc] init];
   SHAccountType  * type     = [store accountTypeWithAccountTypeIdentifier:self.accountTypeIdentifier];
   SHAccount      * account  = [[SHAccount alloc] initWithAccountType:type];
-  AFLinkedInOAuth1Client *  linkedInClient = [[AFLinkedInOAuth1Client alloc]
+  AFLinkedInOAuth1Client *  client = [[AFLinkedInOAuth1Client alloc]
                                               initWithBaseURL:
-                                              [NSURL URLWithString:@"https://api.linkedin.com/"]
+                                              [NSURL URLWithString:@"http://www.flickr.com/services"]
                                               key:[SHOmniAuth providerValue:SHOmniAuthProviderValueKey forProvider:self.provider]
                                               secret:[SHOmniAuth providerValue:SHOmniAuthProviderValueSecret forProvider:self.provider]
                                               ];
   
-  [linkedInClient authorizeUsingOAuthWithRequestTokenPath:@"uas/oauth/requestToken"
-                                    userAuthorizationPath:@"uas/oauth/authorize"
+  [client authorizeUsingOAuthWithRequestTokenPath:@"oauth/request_token"
+                                    userAuthorizationPath:@"oauth/authorize"
                                               callbackURL:[NSURL URLWithString:
                                                            [SHOmniAuth providerValue:SHOmniAuthProviderValueCallbackUrl
                                                                          forProvider:self.provider]]
-                                          accessTokenPath:@"uas/oauth/accessToken"
+                                          accessTokenPath:@"oauth/access_token"
                                              accessMethod:@"POST"
                                                     scope:[SHOmniAuth providerValue:SHOmniAuthProviderValueScope
                                                                         forProvider:self.provider]
                                                   success:^(AFOAuth1Token *accessToken, id responseObject) {
+                                                    NSString * response = [[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding];
+
+
+                                                    
                                                //Remove observer!
                                                SHAccountCredential * credential = [[SHAccountCredential alloc]
                                                                                    initWithOAuthToken:accessToken.key
                                                                                    tokenSecret:accessToken.secret];
                                                
                                                account.credential = credential;
-                                               [SHOmniAuthLinkedIn updateAccount:account withCompleteBlock:completionBlock];
+                                               [SHOmniAuthFlickr updateAccount:account withCompleteBlock:completionBlock];
                                                
                                              } failure:^(NSError *error) {
                                                completionBlock(nil, nil, error, NO);
@@ -117,6 +120,9 @@
   SHAccountType  * accountType  = [accountStore accountTypeWithAccountTypeIdentifier:self.accountTypeIdentifier];
   [accountStore requestAccessToAccountsWithType:accountType options:nil completion:^(BOOL granted, NSError *error) {
     if(granted) {
+      
+      
+      
       NSString * fields = @"id,email-address,first-name,last-name,headline,industry,picture-url,public-profile-url";
       NSString * urlString = [NSString stringWithFormat:@"https://api.linkedin.com/v1/people/~:(%@)?format=json", fields];
 

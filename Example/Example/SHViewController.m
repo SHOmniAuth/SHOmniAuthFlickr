@@ -1,29 +1,47 @@
 //
 //  SHViewController.m
-//  Example
+//  SHOmniAuthLinkedInExample
 //
-//  Created by Seivan Heidari on 5/12/13.
+//  Created by Seivan Heidari on 3/27/13.
 //  Copyright (c) 2013 Seivan Heidari. All rights reserved.
 //
 
 #import "SHViewController.h"
-
+#import "SHOmniAuthFlickr.h"
+#import "UIActionSheet+BlocksKit.h"
+#import "NSArray+BlocksKit.h"
 @interface SHViewController ()
 
 @end
 
 @implementation SHViewController
 
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
-}
+-(void)viewDidAppear:(BOOL)animated; {
+  [super viewDidAppear:animated];
+  [SHOmniAuthFlickr performLoginWithListOfAccounts:^(NSArray *accounts, SHOmniAuthAccountPickerHandler pickAccountBlock) { UIActionSheet * actionSheet = [[UIActionSheet alloc] initWithTitle:@"Pick linkedin account"];
+    [accounts each:^(id<account> account) {
+      [actionSheet addButtonWithTitle:account.username handler:^{
+        pickAccountBlock(account);
+      }];
+    }];
+    
+    NSString * buttonTitle = nil;
+    if(accounts.count > 0)
+      buttonTitle = @"Add account";
+    else
+      buttonTitle = @"Connect with LinkedIn";
+    
+    [actionSheet addButtonWithTitle:buttonTitle handler:^{
+      pickAccountBlock(nil);
+    }];
+    
+    [actionSheet showInView:self.view];
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    
+    
+  } onComplete:^(id<account> account, id response, NSError *error, BOOL isSuccess) {
+    NSLog(@"%@", response);
+  }];
 }
 
 @end
