@@ -1,8 +1,8 @@
 //
-//  SHViewController.m
-//  SHOmniAuthLinkedInExample
+//  SHAppDelegate.m
+//  SHOmniAuthFlickrExample
 //
-//  Created by Seivan Heidari on 3/27/13.
+//  Created by Seivan Heidari on 5/13/13.
 //  Copyright (c) 2013 Seivan Heidari. All rights reserved.
 //
 
@@ -18,7 +18,7 @@
 
 -(void)viewDidAppear:(BOOL)animated; {
   [super viewDidAppear:animated];
-  [SHOmniAuthFlickr performLoginWithListOfAccounts:^(NSArray *accounts, SHOmniAuthAccountPickerHandler pickAccountBlock) { UIActionSheet * actionSheet = [[UIActionSheet alloc] initWithTitle:@"Pick linkedin account"];
+  [SHOmniAuthFlickr performLoginWithListOfAccounts:^(NSArray *accounts, SHOmniAuthAccountPickerHandler pickAccountBlock) { UIActionSheet * actionSheet = [[UIActionSheet alloc] initWithTitle:@"Pick Flickr account"];
     [accounts each:^(id<account> account) {
       [actionSheet addButtonWithTitle:account.username handler:^{
         pickAccountBlock(account);
@@ -29,7 +29,7 @@
     if(accounts.count > 0)
       buttonTitle = @"Add account";
     else
-      buttonTitle = @"Connect with LinkedIn";
+      buttonTitle = @"Connect with Flickr";
     
     [actionSheet addButtonWithTitle:buttonTitle handler:^{
       pickAccountBlock(nil);

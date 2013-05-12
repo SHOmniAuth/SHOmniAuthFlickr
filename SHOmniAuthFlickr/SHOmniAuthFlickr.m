@@ -15,8 +15,7 @@
 
 #import "SHAccountStore.h"
 #import "SHRequest.h"
-
-#import "AFLinkedInOAuth1Client.h"
+#import "AFOAuth1Client.h"
 
 #define NSNullIfNil(v) (v ? v : [NSNull null])
 
@@ -79,7 +78,7 @@
   SHAccountStore * store    = [[SHAccountStore alloc] init];
   SHAccountType  * type     = [store accountTypeWithAccountTypeIdentifier:self.accountTypeIdentifier];
   SHAccount      * account  = [[SHAccount alloc] initWithAccountType:type];
-  AFLinkedInOAuth1Client *  client = [[AFLinkedInOAuth1Client alloc]
+  AFOAuth1Client *  client = [[AFOAuth1Client alloc]
                                               initWithBaseURL:
                                               [NSURL URLWithString:@"http://www.flickr.com/services"]
                                               key:[SHOmniAuth providerValue:SHOmniAuthProviderValueKey forProvider:self.provider]
@@ -96,16 +95,25 @@
                                                     scope:[SHOmniAuth providerValue:SHOmniAuthProviderValueScope
                                                                         forProvider:self.provider]
                                                   success:^(AFOAuth1Token *accessToken, id responseObject) {
-                                                    NSString * response = [[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding];
-
+                                                    
+                                                    
+                                                    NSString     * response      = nil;
+                                                    if(responseObject)
+                                                      response = [[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding];
+                                                    NSDictionary * responseDict = nil;
+                                                    if(response)
+                                                      responseDict = [NSURL ab_parseURLQueryString:response];
 
                                                     
-                                               //Remove observer!
-                                               SHAccountCredential * credential = [[SHAccountCredential alloc]
+
+                                                    SHAccountCredential * credential = [[SHAccountCredential alloc]
                                                                                    initWithOAuthToken:accessToken.key
                                                                                    tokenSecret:accessToken.secret];
                                                
-                                               account.credential = credential;
+                                                    account.credential = credential;
+                                                    account.username = responseDict[@"username"];
+                                                    account.identifier = responseDict[@"user_nsid"];
+                                                    
                                                [SHOmniAuthFlickr updateAccount:account withCompleteBlock:completionBlock];
                                                
                                              } failure:^(NSError *error) {
@@ -123,8 +131,8 @@
       
       
       
-      NSString * fields = @"id,email-address,first-name,last-name,headline,industry,picture-url,public-profile-url";
-      NSString * urlString = [NSString stringWithFormat:@"https://api.linkedin.com/v1/people/~:(%@)?format=json", fields];
+      NSString * fields = theAccount.identifier;
+      NSString * urlString = [NSString stringWithFormat:@"https://www.flickr.com/services/rest/?format=json&method=flickr.people.getInfo&nojsoncallback=1&user_id=%@", fields];
 
       SHRequest * request=  [SHRequest requestForServiceType:theAccount.accountType.identifier requestMethod:SHRequestMethodGET URL:[NSURL URLWithString:urlString] parameters:nil];
       request.account = (id<account>)theAccount;
@@ -138,17 +146,13 @@
         }
         
         
-        
-        theAccount.username = [NSString stringWithFormat:@"%@_%@", response[@"firstName"], response[@"lastName"]];
-        theAccount.identifier = response[@"id"];
-        
+                
         [accountStore saveAccount:theAccount withCompletionHandler:^(BOOL success, NSError *error) {
           NSMutableDictionary * fullResponse = response.mutableCopy;
           id<accountPrivate> privateAccount = (id<accountPrivate>)theAccount;
-          fullResponse[@"oauth_token"] = privateAccount.credential.token;
+          fullResponse[@"oauth_token"]        = privateAccount.credential.token;
           fullResponse[@"oauth_token_secret"] = privateAccount.credential.secret;
-          
-          
+
           dispatch_async(dispatch_get_main_queue(), ^{ completeBlock((id<account>)theAccount, [self authHashWithResponse:fullResponse], error, success); });
         }];
         
@@ -163,27 +167,38 @@
 }
 
 +(NSMutableDictionary *)authHashWithResponse:(NSDictionary *)theResponse; {
+  NSString * name      = theResponse[@"person"][@"realname"][@"_content"];
+  NSArray  * names     = [name componentsSeparatedByString:@" "];
+  NSString * firstName = nil;
+  NSString * lastName  = nil;
+  if(names.count > 0)
+    firstName = names[0];
+  if(names.count > 1)
+    lastName = names[1];
+  if(names.count > 2)
+    lastName = names[names.count-1];
   
-  NSString * name = [NSString stringWithFormat:@"%@ %@", theResponse[@"firstName"], theResponse[@"lastName"]];
+    
+    
   NSMutableDictionary * omniAuthHash = @{@"auth" :
                                   @{@"credentials" : @{@"secret" : NSNullIfNil(theResponse[@"oauth_token_secret"]),
                                                      @"token"  : NSNullIfNil(theResponse[@"oauth_token"])
                                                      }.mutableCopy,
                                   
-                                  @"info" : @{@"description"  : NSNullIfNil(theResponse[@"headline"]),
+                                  @"info" : @{@"description"  : NSNullIfNil(theResponse[@"person"][@"description"][@"_content"]),
                                               @"email"        : NSNullIfNil(theResponse[@"email"]),
-                                              @"first_name"   : NSNullIfNil(theResponse[@"firstName"]),
-                                              @"last_name"    : NSNullIfNil(theResponse[@"lastName"]),
+                                              @"first_name"   : NSNullIfNil(firstName),
+                                              @"last_name"    : NSNullIfNil(lastName),
                                               @"headline"     : NSNullIfNil(theResponse[@"headline"]),
                                               @"industry"     : NSNullIfNil(theResponse[@"industry"]),
                                               @"image"        : NSNullIfNil(theResponse[@"profile_image_url"]),
                                               @"name"         : NSNullIfNil(name),
-                                              @"urls"         : @{@"public_profile" : NSNullIfNil(theResponse[@"publicProfileUrl"])
+                                              @"urls"         : @{@"public_profile" : NSNullIfNil(theResponse[@"person"][@"profileurl"][@"_content"])
                                                                   }.mutableCopy,
                                               
                                               }.mutableCopy,
-                                  @"provider" : @"linkedin",
-                                  @"uid"      : NSNullIfNil(theResponse[@"id"]),
+                                  @"provider" : @"flickr",
+                                  @"uid"      : NSNullIfNil(theResponse[@"person"][@"nsid"]),
                                   @"raw_info" : NSNullIfNil(theResponse)
                                     }.mutableCopy,
                                   @"email"    : NSNullIfNil(theResponse[@"email"]),

@@ -1,8 +1,8 @@
 //
 //  SHAppDelegate.m
-//  SHOmniAuthLinkedInExample
+//  SHOmniAuthFlickrExample
 //
-//  Created by Seivan Heidari on 3/27/13.
+//  Created by Seivan Heidari on 5/13/13.
 //  Copyright (c) 2013 Seivan Heidari. All rights reserved.
 //
 
