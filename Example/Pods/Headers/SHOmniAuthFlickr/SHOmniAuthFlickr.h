@@ -1,0 +1,1 @@
+../../../../SHOmniAuthFlickr/SHOmniAuthFlickr.h
