@@ -14,15 +14,16 @@ Pod::Spec.new do |s|
                     A strategy for authenticating with Flickr via SHOmniAuth.
                     Uses SHAccountStore for store and SHRequest for signed requests.
                    DESC
-  s.homepage     = "https://github.com/seivan/SHOmniAuthFlickr"
 
-  s.license      = {:type => 'MIT' } 
+  s.homepage     = url
+
+  s.license      = 'MIT'
   s.author       = { "Seivan Heidari" => "seivan.heidari@icloud.com" }
   
-  s.source       = { :git => "https://github.com/seivan/SHOmniAuthFlickr.git", :tag => version }
+  s.source       = { :git => git_url, :tag => version }
   s.platform     = :ios, '5.0'
 
-  s.source_files = 'SHOmniAuthFlickr/**/*.{h,m}'
+  s.source_files = source_files
   s.requires_arc = true
 
   s.dependency  'AFOAuth1Client',         '~> 0.2.0'
